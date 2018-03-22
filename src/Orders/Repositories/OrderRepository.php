@@ -3,11 +3,7 @@
 namespace Laracommerce\Core\Orders\Repositories;
 
 use Laracommerce\Core\Base\BaseRepository;
-use Laracommerce\Core\Employees\Employee;
-use Laracommerce\Core\Employees\Repositories\EmployeeRepository;
 use Laracommerce\Core\Orders\Events\OrderCreateEvent;
-use App\Mail\sendEmailNotificationToAdminMailable;
-use App\Mail\SendOrderToCustomerMailable;
 use Laracommerce\Core\Orders\Exceptions\OrderInvalidArgumentException;
 use Laracommerce\Core\Orders\Exceptions\OrderNotFoundException;
 use Laracommerce\Core\Orders\Order;
@@ -17,7 +13,6 @@ use Laracommerce\Core\Products\Product;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Mail;
 
 class OrderRepository extends BaseRepository implements OrderRepositoryInterface
 {
@@ -114,27 +109,6 @@ class OrderRepository extends BaseRepository implements OrderRepositoryInterface
         $this->model->products()->attach($product, ['quantity' => $quantity]);
         $product->quantity = ($product->quantity - $quantity);
         $product->save();
-    }
-
-    /**
-     * Send email to customer
-     */
-    public function sendEmailToCustomer()
-    {
-        Mail::to($this->model->customer)
-            ->send(new SendOrderToCustomerMailable($this->findOrderById($this->model->id)));
-    }
-
-    /**
-     * Send email notification to the admin
-     */
-    public function sendEmailNotificationToAdmin()
-    {
-        $employeeRepo = new EmployeeRepository(new Employee);
-        $employee = $employeeRepo->findEmployeeById(1);
-
-        Mail::to($employee)
-            ->send(new sendEmailNotificationToAdminMailable($this->findOrderById($this->model->id)));
     }
 
     /**

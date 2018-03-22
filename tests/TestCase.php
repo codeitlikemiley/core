@@ -6,20 +6,13 @@ use Laracommerce\Core\Addresses\Address;
 use Laracommerce\Core\Categories\Category;
 use Laracommerce\Core\Couriers\Courier;
 use Laracommerce\Core\Couriers\Repositories\CourierRepository;
-use Laracommerce\Core\Employees\Employee;
 use Laracommerce\Core\Customers\Customer;
-use Laracommerce\Core\Employees\Repositories\EmployeeRepository;
 use Laracommerce\Core\OrderStatuses\OrderStatus;
 use Laracommerce\Core\OrderStatuses\Repositories\OrderStatusRepository;
-use Laracommerce\Core\Permissions\Permission;
 use Laracommerce\Core\Products\Product;
 use Laracommerce\Core\Providers\GlobalTemplateServiceProvider;
 use Laracommerce\Core\Providers\RepositoryServiceProvider;
-use Laracommerce\Core\Roles\Repositories\RoleRepository;
-use Laracommerce\Core\Roles\Role;
 use Gloudemans\Shoppingcart\Cart;
-use Laracommerce\Core\Teams\Team;
-use Laratrust\LaratrustServiceProvider;
 use Laravel\Cashier\CashierServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Faker\Factory as Faker;
@@ -52,15 +45,6 @@ abstract class TestCase extends Orchestra
         $this->withFactories(__DIR__.'/../database/factories');
 
         $this->faker = Faker::create();
-        $this->employee = factory(Employee::class)->create();
-
-        $adminData = ['name' => 'admin'];
-
-        $roleRepo = new RoleRepository(new Role);
-        $admin = $roleRepo->createRole($adminData);
-
-        $employeeRepo = new EmployeeRepository($this->employee);
-        $employeeRepo->syncRoles([$admin->id]);
 
         $this->product = factory(Product::class)->create();
         $this->category = factory(Category::class)->create();
@@ -101,7 +85,6 @@ abstract class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            LaratrustServiceProvider::class,
             GlobalTemplateServiceProvider::class,
             RepositoryServiceProvider::class,
             CashierServiceProvider::class,
@@ -124,13 +107,6 @@ abstract class TestCase extends Orchestra
             'driver' => 'sqlite',
             'database' => ':memory:',
             'prefix' => '',
-        ]);
-
-        $app['config']->set('laratrust.user_models.users', Employee::class);
-        $app['config']->set('laratrust.models', [
-            'role' => Role::class,
-            'permission' => Permission::class,
-            'team' => Team::class,
         ]);
     }
 
